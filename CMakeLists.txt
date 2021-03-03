@@ -158,3 +158,14 @@ if(ABSL_ENABLE_INSTALL)
       PATTERN "*.h"
   )
 endif()  # ABSL_ENABLE_INSTALL
+
+# CPack debian package generation (package target)
+set(CPACK_PACKAGE_NAME "absl-h2t")
+set(CPACK_RPM_PACKAGE_GROUP "absl-h2t")
+set(CPACK_PACKAGE_VENDOR "absl-h2t")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "H2T")
+SET(CPACK_GENERATOR "DEB")
+
+include(CPack)
+
+
