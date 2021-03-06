@@ -19,7 +19,7 @@
 # version of CMake by first installing Extra Packages for Enterprise Linux
 # (https://fedoraproject.org/wiki/EPEL#Extra_Packages_for_Enterprise_Linux_.28EPEL.29)
 # and then issuing `yum install cmake3` on the command line.
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.9)
 
 # Compiler id for Apple Clang is now AppleClang.
 cmake_policy(SET CMP0025 NEW)
@@ -49,6 +49,7 @@ include(AbseilInstallDirs)
 include(CMakePackageConfigHelpers)
 include(AbseilHelpers)
 
+set(CMAKE_BUILD_TYPE Release)
 
 ##
 ## Using absl targets
@@ -127,12 +128,18 @@ if(ABSL_ENABLE_INSTALL)
     NAMESPACE absl::
     DESTINATION "${ABSL_INSTALL_CONFIGDIR}"
   )
+  install(EXPORT ${PROJECT_NAME}Targets
+    NAMESPACE absl::
+    DESTINATION "${PROJECT_BINARY_DIR}"
+  )
 
   configure_package_config_file(
     CMake/abslConfig.cmake.in
     "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
     INSTALL_DESTINATION "${ABSL_INSTALL_CONFIGDIR}"
   )
+
+
   install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
     DESTINATION "${ABSL_INSTALL_CONFIGDIR}"
   )
@@ -157,7 +164,55 @@ if(ABSL_ENABLE_INSTALL)
       PATTERN "*.inc"
       PATTERN "*.h"
   )
+
+
+
+
+function(get_all_targets var)
+    set(targets)
+    get_all_targets_recursive(targets ${CMAKE_CURRENT_SOURCE_DIR})
+    set(${var} ${targets} PARENT_SCOPE)
+endfunction()
+
+macro(get_all_targets_recursive targets dir)
+    get_property(subdirectories DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
+    foreach(subdir ${subdirectories})
+        get_all_targets_recursive(${targets} ${subdir})
+    endforeach()
+
+    get_property(current_targets DIRECTORY ${dir} PROPERTY BUILDSYSTEM_TARGETS)
+    list(APPEND ${targets} ${current_targets})
+endmacro()
+
+get_all_targets(all_targets)
+message(STATUS "All targets: ${all_targets}")
+
+
+#/home/fabi/repos/abseil-cpp/build/lib/cmake/absl/abslTargets.cmake
+
+# If there are several targets (e.g., several libraries), you need to list them all here
+export(
+	TARGETS
+		${all_targets}
+	NAMESPACE
+    absl::
+  FILE
+		"${PROJECT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake"
+)
+
+#install(EXPORT ${PROJECT_NAME}Targets
+#    NAMESPACE absl::
+#    DESTINATION "${ABSL_INSTALL_CONFIGDIR}"
+#  )
+
+export(PACKAGE ${PROJECT_NAME})
+
+
 endif()  # ABSL_ENABLE_INSTALL
+
+
+
+
 
 # CPack debian package generation (package target)
 set(CPACK_PACKAGE_NAME "absl-h2t")
