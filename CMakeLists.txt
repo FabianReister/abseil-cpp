@@ -50,6 +50,7 @@ include(CMakePackageConfigHelpers)
 include(AbseilHelpers)
 
 set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ##
 ## Using absl targets
